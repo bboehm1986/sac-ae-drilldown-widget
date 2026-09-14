@@ -1,0 +1,51 @@
+{
+    "id": "com.porticobenefits.aedrilldown",
+    "name": "AE Employer Election Drill-Down",
+    "version": "1.0.0",
+    "vendor": "Portico Benefits",
+    "license": "",
+    "eula": "",
+    "description": "Per-employer 2026 vs 2027 Annual Enrollment comparison. Meant to sit beside a native SAC Input Control (bound to Employer_Name via Linked Analysis): with no employer selected, shows a needs-attention list sorted by size and completion; with one selected, shows a full year-over-year comparison card.",
+    "newInstancePrefix": "AEEmployerDrilldown",
+    "icon": "https://bboehm1986.github.io/sac-ae-drilldown-widget/icon.svg",
+    "webcomponents": [
+        {
+            "kind": "main",
+            "tag": "com-porticobenefits-aedrilldown",
+            "url": "https://bboehm1986.github.io/sac-ae-drilldown-widget/main.js",
+            "integrity": "sha384-IQB5EFbhaTRZ2Nvnxo7WfZ8wz3a6DzLC6K2KKFIcCv5/gc4kiFGmn7jyHIYhYAJx"
+        }
+    ],
+    "properties": {
+        "width": {
+            "type": "integer",
+            "default": 900
+        },
+        "height": {
+            "type": "integer",
+            "default": 420
+        }
+    },
+    "dataBindings": {
+        "employerYoy": {
+            "feeds": [
+                {
+                    "id": "dimensions",
+                    "description": "Employer_Name / Synod_Region / Eligible_Band / Status_2027 / Status_2026 / Contribution_Set_2027 / Contribution_Set_2026 / Health_Plan_Bundle_2027, from AM_EMPLOYER_ENROLLMENT_YOY (built on GLD_AE_Employer_Enrollment_YoY, one row per employer). Status_2026 uses a different, unreconciled vocabulary than Status_2027 -- shown as-is, not mapped. Bind this widget's model, then filter it via a native Input Control on Employer_Name (Tools -> Link Dimensions) -- no selection shows a needs-attention list, one selection shows a full comparison card.",
+                    "type": "dimension"
+                },
+                {
+                    "id": "measures",
+                    "description": "Employee_Count_2027, Employee_Count_2026, Eligible_Count_2027, HSA_Single_2027, HSA_Family_2027, HSA_One_Time_Single_2027, HSA_One_Time_Family_2027, HSA_Single_2026, HSA_Family_2026, HSA_One_Time_Single_2026, HSA_One_Time_Family_2026 -- in that exact order",
+                    "type": "mainStructureMember"
+                }
+            ]
+        }
+    },
+    "methods": {
+        "refresh": {
+            "description": "Re-renders the widget from the currently bound data"
+        }
+    },
+    "events": {}
+}
