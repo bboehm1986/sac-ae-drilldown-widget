@@ -1,7 +1,7 @@
 {
     "id": "com.porticobenefits.aedrilldown",
     "name": "AE Employer Election Drill-Down",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "vendor": "Portico Benefits",
     "license": "",
     "eula": "",
@@ -13,7 +13,7 @@
             "kind": "main",
             "tag": "com-porticobenefits-aedrilldown",
             "url": "https://bboehm1986.github.io/sac-ae-drilldown-widget/main.js",
-            "integrity": "sha384-IQB5EFbhaTRZ2Nvnxo7WfZ8wz3a6DzLC6K2KKFIcCv5/gc4kiFGmn7jyHIYhYAJx"
+            "integrity": "sha384-jYFskD/pB9akbjIZB2cu9Kgr9+o4Qqjlz9JqZVP8L8GUpV1G2tQBzcX3h1AJu84X"
         }
     ],
     "properties": {
@@ -31,12 +31,12 @@
             "feeds": [
                 {
                     "id": "dimensions",
-                    "description": "Employer_Name / Synod_Region / Eligible_Band / Status_2027 / Status_2026 / Contribution_Set_2027 / Contribution_Set_2026 / Health_Plan_Bundle_2027, from AM_EMPLOYER_ENROLLMENT_YOY (built on GLD_AE_Employer_Enrollment_YoY, one row per employer). Status_2026 uses a different, unreconciled vocabulary than Status_2027 -- shown as-is, not mapped. Bind this widget's model, then filter it via a native Input Control on Employer_Name (Tools -> Link Dimensions) -- no selection shows a needs-attention list, one selection shows a full comparison card.",
+                    "description": "Employer_Name / Synod_Region / Eligible_Band / Enrollment_Status / Status_2026 / Contribution_Set / Contribution_Set_2026 / Health_Plan_Bundle, from AM_EMPLOYER_ENROLLMENT_DETAIL (built directly on GLD_AE_Employer_Enrollment -- GLD_AE_Employer_Enrollment_YoY and AM_EMPLOYER_ENROLLMENT_YOY were retired 2026-09-16 once their columns were merged into Gold). Status_2026 uses a different, unreconciled vocabulary than Enrollment_Status -- shown as-is, not mapped; still open how to source that same vocabulary for the current cycle. Bind this widget's model, then filter it via a native Input Control on Employer_Name (Tools -> Link Dimensions) -- no selection shows a needs-attention list, one selection shows a full comparison card.",
                     "type": "dimension"
                 },
                 {
                     "id": "measures",
-                    "description": "Employee_Count_2027, Employee_Count_2026, Eligible_Count_2027, HSA_Single_2027, HSA_Family_2027, HSA_One_Time_Single_2027, HSA_One_Time_Family_2027, HSA_Single_2026, HSA_Family_2026, HSA_One_Time_Single_2026, HSA_One_Time_Family_2026 -- in that exact order",
+                    "description": "Employee_Count, Employee_Count_2026, Eligible_Count_2027, HSA_Single, HSA_Family, HSA_One_Time_Single, HSA_One_Time_Family, HSA_Single_2026, HSA_Family_2026, HSA_One_Time_Single_2026, HSA_One_Time_Family_2026 -- in that exact order",
                     "type": "mainStructureMember"
                 }
             ]

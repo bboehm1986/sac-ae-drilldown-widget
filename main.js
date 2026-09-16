@@ -7,49 +7,67 @@
     same design system, so the per-employer 2026-vs-2027 comparison
     reads as part of the dashboard rather than a plain grid dropped next
     to it. See BUILD_PLAN_VWEMPLOYERSAVES.md in the sac-ae-snap-report-
-    widget folder, "Per-employer 2026-vs-2027 drill-down", for the full
-    spec and the GLD_AE_Employer_Enrollment_YoY view it reads from.
+    widget folder, "Per-employer 2026-vs-2027 drill-down", for the
+    original spec — and "Merge GLD_AE_Employer_Enrollment_YoY into Gold"
+    for why this now reads from GLD_AE_Employer_Enrollment directly.
 
     Unlike the other two widgets, this one binds to its OWN model
-    (AM_EMPLOYER_ENROLLMENT_YOY, row-level — one row per employer, not an
-    aggregate cube) and is meant to sit beside a native SAC Input Control
-    that filters it by Employer_Name via standard Linked Analysis. That's
-    a different mechanism than the internal click/change events that are
-    confirmed NOT to reach a custom widget in Optimized Story View mode
-    (see the original widget's README) — an EXTERNAL Input Control
-    changing the bound query's filter and pushing fresh data through
-    onCustomWidgetAfterUpdate is the standard, already-working pattern
-    used elsewhere on this Story (Synod/Status Input Controls already do
-    this today against the other two widgets' shared model).
+    (AM_EMPLOYER_ENROLLMENT_DETAIL, row-level — one row per employer, not
+    an aggregate cube) and is meant to sit beside a native SAC Input
+    Control that filters it by Employer_Name via standard Linked
+    Analysis. That's a different mechanism than the internal click/change
+    events that are confirmed NOT to reach a custom widget in Optimized
+    Story View mode (see the original widget's README) — an EXTERNAL
+    Input Control changing the bound query's filter and pushing fresh
+    data through onCustomWidgetAfterUpdate is the standard, already-
+    working pattern used elsewhere on this Story (Synod/Status Input
+    Controls already do this today against the other two widgets' shared
+    model).
+
+    Re-pointed 2026-09-16 at the merged Gold layer, per Blair: the
+    standalone GLD_AE_Employer_Enrollment_YoY view (and the
+    AM_EMPLOYER_ENROLLMENT_YOY model on it) were deleted once their
+    columns were folded directly into GLD_AE_Employer_Enrollment /
+    AM_EMPLOYER_ENROLLMENT_DETAIL — see BUILD_PLAN_VWEMPLOYERSAVES.md,
+    "Merge GLD_AE_Employer_Enrollment_YoY into Gold". Current-cycle
+    columns dropped their "_2027" suffix in the merge (they're Gold's
+    plain columns now, same as every other widget reads); only the
+    2026-side columns stay suffixed.
 
     Data binding (declared in widget.json):
 
-      - employerYoy  <- GLD_AE_Employer_Enrollment_YoY / AM_EMPLOYER_ENROLLMENT_YOY
+      - employerYoy  <- GLD_AE_Employer_Enrollment / AM_EMPLOYER_ENROLLMENT_DETAIL
             dimensions_0 = Employer_Name
             dimensions_1 = Synod_Region
             dimensions_2 = Eligible_Band       ("20+" / "10-19" / "3-9" /
                             "Under 3" / "Unknown")
-            dimensions_3 = Status_2027         (Success / Abandoned / Not
+            dimensions_3 = Enrollment_Status   (Success / Abandoned / Not
                             Started / In Progress / Needs Follow-up)
             dimensions_4 = Status_2026         (Matt Christensen's own
                             vocabulary — Undetermined / Completed EL /
                             Completed OTP / etc. — NOT reconciled against
-                            Status_2027, see header note in the SQL spec)
-            dimensions_5 = Contribution_Set_2027
+                            Enrollment_Status; still unresolved how to
+                            source this same vocabulary for 2027, see
+                            BUILD_PLAN_VWEMPLOYERSAVES.md)
+            dimensions_5 = Contribution_Set
             dimensions_6 = Contribution_Set_2026
-            dimensions_7 = Health_Plan_Bundle_2027 (no 2026 equivalent —
+            dimensions_7 = Health_Plan_Bundle  (no 2026 equivalent —
                             always shown as "—" on that side)
-            measures_0   = Employee_Count_2027
+            measures_0   = Employee_Count
             measures_1   = Employee_Count_2026
             measures_2   = Eligible_Count_2027
-            measures_3   = HSA_Single_2027
-            measures_4   = HSA_Family_2027
-            measures_5   = HSA_One_Time_Single_2027
-            measures_6   = HSA_One_Time_Family_2027
+            measures_3   = HSA_Single
+            measures_4   = HSA_Family
+            measures_5   = HSA_One_Time_Single
+            measures_6   = HSA_One_Time_Family
             measures_7   = HSA_Single_2026
             measures_8   = HSA_Family_2026
             measures_9   = HSA_One_Time_Single_2026
             measures_10  = HSA_One_Time_Family_2026
+
+      Employer_Display_Name exists on Gold too but stays out of this
+      binding for now — scoped to "Gold only" per Blair's 2026-09-16
+      decision, not yet wired into this widget or its Input Control.
 
     Two render states, decided purely by how many rows arrive:
       - No Input Control selection  -> many rows -> "needs attention"
@@ -73,7 +91,7 @@
     // Largest-first — mirrors the Operational widget's BAND_ORDER exactly,
     // so "needs attention" prioritizes the same way across both dashboards.
     const BAND_ORDER = ["20+", "10-19", "3-9", "Under 3", "Unknown"];
-    const STATUS_2027_PRIORITY = {
+    const STATUS_PRIORITY = {
         "Not Started": 1, "In Progress": 2, "Needs Follow-up": 3, "Abandoned": 4, "Success": 5,
     };
     const MAX_LIST_ROWS = 20;
@@ -257,18 +275,18 @@
                 employerName: this._dim(r, 0),
                 synodRegion: this._dim(r, 1),
                 eligibleBand: this._dim(r, 2),
-                status2027: this._dim(r, 3),
+                enrollmentStatus: this._dim(r, 3),
                 status2026: this._dim(r, 4),
-                contributionSet2027: this._dim(r, 5),
+                contributionSet: this._dim(r, 5),
                 contributionSet2026: this._dim(r, 6),
-                healthPlanBundle2027: this._dim(r, 7),
-                employeeCount2027: this._measure(r, 0),
+                healthPlanBundle: this._dim(r, 7),
+                employeeCount: this._measure(r, 0),
                 employeeCount2026: this._measure(r, 1),
                 eligibleCount2027: this._measure(r, 2),
-                hsaSingle2027: this._measure(r, 3),
-                hsaFamily2027: this._measure(r, 4),
-                hsaOneTimeSingle2027: this._measure(r, 5),
-                hsaOneTimeFamily2027: this._measure(r, 6),
+                hsaSingle: this._measure(r, 3),
+                hsaFamily: this._measure(r, 4),
+                hsaOneTimeSingle: this._measure(r, 5),
+                hsaOneTimeFamily: this._measure(r, 6),
                 hsaSingle2026: this._measure(r, 7),
                 hsaFamily2026: this._measure(r, 8),
                 hsaOneTimeSingle2026: this._measure(r, 9),
@@ -281,7 +299,7 @@
             return i === -1 ? BAND_ORDER.length : i;
         }
         _statusPriority(status) {
-            return STATUS_2027_PRIORITY[status] || 99;
+            return STATUS_PRIORITY[status] || 99;
         }
 
         _money(v) {
@@ -291,14 +309,14 @@
         // ---- Selected-employer comparison card ----
         _comparisonCardHtml(e) {
             const rows = [
-                { label: "Status", v2026: e.status2026 || "—", v2027: e.status2027 || "—" },
-                { label: "Contribution Set", v2026: e.contributionSet2026 || "—", v2027: e.contributionSet2027 || "—" },
-                { label: "Health Plan Bundle", v2026: "—", v2027: e.healthPlanBundle2027 || "—" },
-                { label: "HSA Single", v2026: this._money(e.hsaSingle2026), v2027: this._money(e.hsaSingle2027) },
-                { label: "HSA Family", v2026: this._money(e.hsaFamily2026), v2027: this._money(e.hsaFamily2027) },
-                { label: "HSA One-Time Single", v2026: this._money(e.hsaOneTimeSingle2026), v2027: this._money(e.hsaOneTimeSingle2027) },
-                { label: "HSA One-Time Family", v2026: this._money(e.hsaOneTimeFamily2026), v2027: this._money(e.hsaOneTimeFamily2027) },
-                { label: "Employee Count", v2026: e.employeeCount2026.toLocaleString(), v2027: e.employeeCount2027.toLocaleString() },
+                { label: "Status", v2026: e.status2026 || "—", v2027: e.enrollmentStatus || "—" },
+                { label: "Contribution Set", v2026: e.contributionSet2026 || "—", v2027: e.contributionSet || "—" },
+                { label: "Health Plan Bundle", v2026: "—", v2027: e.healthPlanBundle || "—" },
+                { label: "HSA Single", v2026: this._money(e.hsaSingle2026), v2027: this._money(e.hsaSingle) },
+                { label: "HSA Family", v2026: this._money(e.hsaFamily2026), v2027: this._money(e.hsaFamily) },
+                { label: "HSA One-Time Single", v2026: this._money(e.hsaOneTimeSingle2026), v2027: this._money(e.hsaOneTimeSingle) },
+                { label: "HSA One-Time Family", v2026: this._money(e.hsaOneTimeFamily2026), v2027: this._money(e.hsaOneTimeFamily) },
+                { label: "Employee Count", v2026: e.employeeCount2026.toLocaleString(), v2027: e.employeeCount.toLocaleString() },
             ];
             const bodyRows = rows.map((r) =>
                 `<tr><th scope="row">${r.label}</th><td>${r.v2026}</td><td>${r.v2027}</td></tr>`
@@ -325,7 +343,7 @@
                         <div class="primary" title="${e.employerName}">${e.employerName || "(Unnamed Employer)"}</div>
                         <div class="secondary">${e.eligibleBand || "Unknown"} eligible &middot; ${e.synodRegion || "No region"}</div>
                     </div>
-                    <div class="status">${e.status2027 || "—"}</div>
+                    <div class="status">${e.enrollmentStatus || "—"}</div>
                 </div>`
             ).join("");
             const more = entries.length > MAX_LIST_ROWS
@@ -350,14 +368,14 @@
             }
 
             // Needs-attention default state — sorted client-side, largest
-            // Eligible_Band and least-complete Status_2027 first. No SQL
-            // sort-helper columns needed here since a custom widget sorts
-            // in JS anyway (unlike the native-Table alternative this
+            // Eligible_Band and least-complete Enrollment_Status first. No
+            // SQL sort-helper columns needed here since a custom widget
+            // sorts in JS anyway (unlike the native-Table alternative this
             // replaced, see BUILD_PLAN_VWEMPLOYERSAVES.md).
             const sorted = rows.slice().sort((a, b) => {
                 const bandDiff = this._bandPriority(a.eligibleBand) - this._bandPriority(b.eligibleBand);
                 if (bandDiff !== 0) return bandDiff;
-                const statusDiff = this._statusPriority(a.status2027) - this._statusPriority(b.status2027);
+                const statusDiff = this._statusPriority(a.enrollmentStatus) - this._statusPriority(b.enrollmentStatus);
                 if (statusDiff !== 0) return statusDiff;
                 return (a.employerName || "").localeCompare(b.employerName || "");
             });
