@@ -53,6 +53,11 @@
             dimensions_6 = Contribution_Set_2026
             dimensions_7 = Health_Plan_Bundle  (no 2026 equivalent —
                             always shown as "—" on that side)
+            dimensions_8 = Address_Line_1      (added 2026-09-17, no 2026
+                            equivalent — address is current-cycle only)
+            dimensions_9 = City
+            dimensions_10 = State_Province
+            dimensions_11 = Postal_Code
             measures_0   = Employee_Count
             measures_1   = Employee_Count_2026
             measures_2   = Eligible_Count_2027
@@ -105,17 +110,17 @@
 
     // Multi-row mock — the unfiltered "needs attention" default state.
     const MOCK_YOY_LIST = { data: [
-        row(["Trinity Lutheran Church", "Southwestern Minnesota", "20+", "Not Started", "Undetermined", "", "", ""], [0, 34, 41, 0, 0, 0, 0, 900, 900, 500, 0]),
-        row(["First Lutheran Church", "Metropolitan Chicago", "20+", "In Progress", "Completed EL", "TRAD_VLHD", "TRAD_VLCP", ""], [0, 28, 33, 0, 0, 0, 0, 1200, 1200, 0, 0]),
-        row(["Grace Lutheran Church", "Southeastern Synod", "10-19", "Not Started", "Undetermined", "", "", ""], [0, 15, 17, 0, 0, 0, 0, 0, 0, 0, 0]),
-        row(["Zion Lutheran Church", "Southwestern Minnesota", "10-19", "Abandoned", "Completed OTP", "TRAD_SLCP", "TRAD_SLCP", "Value Copay"], [26, 14, 16, 900, 900, 0, 0, 900, 900, 0, 0]),
-        row(["St. John's Lutheran Church", "Metropolitan Chicago", "3-9", "Success", "Completed EL", "TRAD_SLHD", "TRAD_SLHD", "Value HDHP"], [7, 6, 8, 0, 0, 500, 0, 0, 0, 500, 0]),
-        row(["Bethlehem Lutheran Church", "Southeastern Synod", "Under 3", "Success", "Completed OTP", "TRAD_VLCP", "TRAD_VLCP", "Select Copay"], [2, 2, 2, 1200, 1200, 0, 0, 1200, 1200, 0, 0]),
+        row(["Trinity Lutheran Church", "Southwestern Minnesota", "20+", "Not Started", "Undetermined", "", "", "", "100 Main St", "Minneapolis", "MN", "55401"], [0, 34, 41, 0, 0, 0, 0, 900, 900, 500, 0]),
+        row(["First Lutheran Church", "Metropolitan Chicago", "20+", "In Progress", "Completed EL", "TRAD_VLHD", "TRAD_VLCP", "", "200 Oak Ave", "Chicago", "IL", "60601"], [0, 28, 33, 0, 0, 0, 0, 1200, 1200, 0, 0]),
+        row(["Grace Lutheran Church", "Southeastern Synod", "10-19", "Not Started", "Undetermined", "", "", "", "300 Elm St", "Atlanta", "GA", "30301"], [0, 15, 17, 0, 0, 0, 0, 0, 0, 0, 0]),
+        row(["Zion Lutheran Church", "Southwestern Minnesota", "10-19", "Abandoned", "Completed OTP", "TRAD_SLCP", "TRAD_SLCP", "Value Copay", "400 Pine Rd", "St. Paul", "MN", "55101"], [26, 14, 16, 900, 900, 0, 0, 900, 900, 0, 0]),
+        row(["St. John's Lutheran Church", "Metropolitan Chicago", "3-9", "Success", "Completed EL", "TRAD_SLHD", "TRAD_SLHD", "Value HDHP", "500 Maple Dr", "Evanston", "IL", "60201"], [7, 6, 8, 0, 0, 500, 0, 0, 0, 500, 0]),
+        row(["Bethlehem Lutheran Church", "Southeastern Synod", "Under 3", "Success", "Completed OTP", "TRAD_VLCP", "TRAD_VLCP", "Select Copay", "600 Birch Ln", "Savannah", "GA", "31401"], [2, 2, 2, 1200, 1200, 0, 0, 1200, 1200, 0, 0]),
     ] };
 
     // Single-row mock — one employer selected via the Input Control.
     const MOCK_YOY_SELECTED = { data: [
-        row(["Trinity Lutheran Church", "Southwestern Minnesota", "20+", "In Progress", "Undetermined", "TRAD_VLHD", "", "Value HDHP"], [36, 34, 41, 1200, 1200, 500, 0, 900, 900, 500, 0]),
+        row(["Trinity Lutheran Church", "Southwestern Minnesota", "20+", "In Progress", "Undetermined", "TRAD_VLHD", "", "Value HDHP", "100 Main St", "Minneapolis", "MN", "55401"], [36, 34, 41, 1200, 1200, 500, 0, 900, 900, 500, 0]),
     ] };
 
     const template = document.createElement("template");
@@ -267,7 +272,9 @@
         }
         _measure(r, i) {
             const m = r["measures_" + i];
-            return m ? Number(m.raw) : 0;
+            if (!m) return 0;
+            const n = Number(m.raw);
+            return Number.isFinite(n) ? n : 0;
         }
 
         _parseRow(r) {
@@ -280,6 +287,10 @@
                 contributionSet: this._dim(r, 5),
                 contributionSet2026: this._dim(r, 6),
                 healthPlanBundle: this._dim(r, 7),
+                addressLine1: this._dim(r, 8),
+                city: this._dim(r, 9),
+                stateProvince: this._dim(r, 10),
+                postalCode: this._dim(r, 11),
                 employeeCount: this._measure(r, 0),
                 employeeCount2026: this._measure(r, 1),
                 eligibleCount2027: this._measure(r, 2),
@@ -306,6 +317,13 @@
             return "$" + Number(v || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
+        // Current-cycle only, same as Health Plan Bundle — no 2026 side.
+        _addressLine(e) {
+            const cityStateZip = [e.city, [e.stateProvince, e.postalCode].filter(Boolean).join(" ")]
+                .filter(Boolean).join(", ");
+            return [e.addressLine1, cityStateZip].filter(Boolean).join(" · ");
+        }
+
         // ---- Selected-employer comparison card ----
         _comparisonCardHtml(e) {
             const rows = [
@@ -327,6 +345,7 @@
                     <span class="pill">${e.eligibleBand || "Unknown"} eligible</span>
                 </div>
                 <div class="employer-sub">${e.synodRegion || "No region on file"}</div>
+                <div class="employer-sub">${this._addressLine(e) || "No address on file"}</div>
                 <table class="compare-table">
                     <thead><tr><th scope="col"></th><th scope="col">2026</th><th scope="col">2027</th></tr></thead>
                     <tbody>${bodyRows}</tbody>
