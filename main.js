@@ -58,6 +58,12 @@
             dimensions_9 = City
             dimensions_10 = State_Province
             dimensions_11 = Postal_Code
+            dimensions_12 = Election_Status    (added 2026-09-18, no 2026
+                            equivalent — current-cycle only, same as
+                            address. This is what's actually shown for
+                            2027 status everywhere now; Enrollment_Status
+                            (dimensions_3) stays bound purely to drive the
+                            needs-attention sort order, see STATUS_PRIORITY)
             measures_0   = Employee_Count
             measures_1   = Employee_Count_2026
             measures_2   = Eligible_Count_2027
@@ -70,9 +76,11 @@
             measures_9   = HSA_One_Time_Single_2026
             measures_10  = HSA_One_Time_Family_2026
 
-      Employer_Display_Name exists on Gold too but stays out of this
-      binding for now — scoped to "Gold only" per Blair's 2026-09-16
-      decision, not yet wired into this widget or its Input Control.
+      dimensions_0 is actually bound to Employer_Display_Name, not plain
+      Employer_Name — Blair's own later call, 2026-09-16 (it includes the
+      employer number, disambiguating same-named employers); the
+      "Employer_Name" label above is legacy from before that switch,
+      the widget code itself doesn't care what string lands in slot 0.
 
     Two render states, decided purely by how many rows arrive:
       - No Input Control selection  -> many rows -> "needs attention"
@@ -110,17 +118,17 @@
 
     // Multi-row mock — the unfiltered "needs attention" default state.
     const MOCK_YOY_LIST = { data: [
-        row(["Trinity Lutheran Church", "Southwestern Minnesota", "20+", "Not Started", "Undetermined", "", "", "", "100 Main St", "Minneapolis", "MN", "55401"], [0, 34, 41, 0, 0, 0, 0, 900, 900, 500, 0]),
-        row(["First Lutheran Church", "Metropolitan Chicago", "20+", "In Progress", "Completed EL", "TRAD_VLHD", "TRAD_VLCP", "", "200 Oak Ave", "Chicago", "IL", "60601"], [0, 28, 33, 0, 0, 0, 0, 1200, 1200, 0, 0]),
-        row(["Grace Lutheran Church", "Southeastern Synod", "10-19", "Not Started", "Undetermined", "", "", "", "300 Elm St", "Atlanta", "GA", "30301"], [0, 15, 17, 0, 0, 0, 0, 0, 0, 0, 0]),
-        row(["Zion Lutheran Church", "Southwestern Minnesota", "10-19", "Abandoned", "Completed OTP", "TRAD_SLCP", "TRAD_SLCP", "Value Copay", "400 Pine Rd", "St. Paul", "MN", "55101"], [26, 14, 16, 900, 900, 0, 0, 900, 900, 0, 0]),
-        row(["St. John's Lutheran Church", "Metropolitan Chicago", "3-9", "Success", "Completed EL", "TRAD_SLHD", "TRAD_SLHD", "Value HDHP", "500 Maple Dr", "Evanston", "IL", "60201"], [7, 6, 8, 0, 0, 500, 0, 0, 0, 500, 0]),
-        row(["Bethlehem Lutheran Church", "Southeastern Synod", "Under 3", "Success", "Completed OTP", "TRAD_VLCP", "TRAD_VLCP", "Select Copay", "600 Birch Ln", "Savannah", "GA", "31401"], [2, 2, 2, 1200, 1200, 0, 0, 1200, 1200, 0, 0]),
+        row(["Trinity Lutheran Church", "Southwestern Minnesota", "20+", "Not Started", "Undetermined", "", "", "", "100 Main St", "Minneapolis", "MN", "55401", "Open"], [0, 34, 41, 0, 0, 0, 0, 900, 900, 500, 0]),
+        row(["First Lutheran Church", "Metropolitan Chicago", "20+", "In Progress", "Completed EL", "TRAD_VLHD", "TRAD_VLCP", "", "200 Oak Ave", "Chicago", "IL", "60601", "Open"], [0, 28, 33, 0, 0, 0, 0, 1200, 1200, 0, 0]),
+        row(["Grace Lutheran Church", "Southeastern Synod", "10-19", "Not Started", "Undetermined", "", "", "", "300 Elm St", "Atlanta", "GA", "30301", "Open"], [0, 15, 17, 0, 0, 0, 0, 0, 0, 0, 0]),
+        row(["Zion Lutheran Church", "Southwestern Minnesota", "10-19", "Abandoned", "Completed OTP", "TRAD_SLCP", "TRAD_SLCP", "Value Copay", "400 Pine Rd", "St. Paul", "MN", "55101", "Open"], [26, 14, 16, 900, 900, 0, 0, 900, 900, 0, 0]),
+        row(["St. John's Lutheran Church", "Metropolitan Chicago", "3-9", "Success", "Completed EL", "TRAD_SLHD", "TRAD_SLHD", "Value HDHP", "500 Maple Dr", "Evanston", "IL", "60201", "Completed EL"], [7, 6, 8, 0, 0, 500, 0, 0, 0, 500, 0]),
+        row(["Bethlehem Lutheran Church", "Southeastern Synod", "Under 3", "Success", "Completed OTP", "TRAD_VLCP", "TRAD_VLCP", "Select Copay", "600 Birch Ln", "Savannah", "GA", "31401", "Completed OTP"], [2, 2, 2, 1200, 1200, 0, 0, 1200, 1200, 0, 0]),
     ] };
 
     // Single-row mock — one employer selected via the Input Control.
     const MOCK_YOY_SELECTED = { data: [
-        row(["Trinity Lutheran Church", "Southwestern Minnesota", "20+", "In Progress", "Undetermined", "TRAD_VLHD", "", "Value HDHP", "100 Main St", "Minneapolis", "MN", "55401"], [36, 34, 41, 1200, 1200, 500, 0, 900, 900, 500, 0]),
+        row(["Trinity Lutheran Church", "Southwestern Minnesota", "20+", "In Progress", "Undetermined", "TRAD_VLHD", "", "Value HDHP", "100 Main St", "Minneapolis", "MN", "55401", "Open"], [36, 34, 41, 1200, 1200, 500, 0, 900, 900, 500, 0]),
     ] };
 
     const template = document.createElement("template");
@@ -291,6 +299,7 @@
                 city: this._dim(r, 9),
                 stateProvince: this._dim(r, 10),
                 postalCode: this._dim(r, 11),
+                electionStatus: this._dim(r, 12),
                 employeeCount: this._measure(r, 0),
                 employeeCount2026: this._measure(r, 1),
                 eligibleCount2027: this._measure(r, 2),
@@ -325,16 +334,21 @@
         }
 
         // ---- Selected-employer comparison card ----
+        // Row order and "Status" source updated 2026-09-18, per Blair:
+        // Status now reads Election_Status (2027 side) instead of
+        // Enrollment_Status — see header comment. Contribution Set moved
+        // to the bottom of the table and relabeled "Contribution Set
+        // (Configuration)".
         _comparisonCardHtml(e) {
             const rows = [
-                { label: "Status", v2026: e.status2026 || "—", v2027: e.enrollmentStatus || "—" },
-                { label: "Contribution Set", v2026: e.contributionSet2026 || "—", v2027: e.contributionSet || "—" },
+                { label: "Status", v2026: e.status2026 || "—", v2027: e.electionStatus || "—" },
                 { label: "Health Plan Bundle", v2026: "—", v2027: e.healthPlanBundle || "—" },
                 { label: "HSA Single", v2026: this._money(e.hsaSingle2026), v2027: this._money(e.hsaSingle) },
                 { label: "HSA Family", v2026: this._money(e.hsaFamily2026), v2027: this._money(e.hsaFamily) },
                 { label: "HSA One-Time Single", v2026: this._money(e.hsaOneTimeSingle2026), v2027: this._money(e.hsaOneTimeSingle) },
                 { label: "HSA One-Time Family", v2026: this._money(e.hsaOneTimeFamily2026), v2027: this._money(e.hsaOneTimeFamily) },
                 { label: "Employee Count", v2026: e.employeeCount2026.toLocaleString(), v2027: e.employeeCount.toLocaleString() },
+                { label: "Contribution Set (Configuration)", v2026: e.contributionSet2026 || "—", v2027: e.contributionSet || "—" },
             ];
             const bodyRows = rows.map((r) =>
                 `<tr><th scope="row">${r.label}</th><td>${r.v2026}</td><td>${r.v2027}</td></tr>`
@@ -342,7 +356,7 @@
             return `
                 <div class="employer-head">
                     <h2>${e.employerName || "(Unnamed Employer)"}</h2>
-                    <span class="pill">${e.eligibleBand || "Unknown"} eligible</span>
+                    <span class="pill">${e.employeeCount.toLocaleString()} Members</span>
                 </div>
                 <div class="employer-sub">${e.synodRegion || "No region on file"}</div>
                 <div class="employer-sub">${this._addressLine(e) || "No address on file"}</div>
@@ -353,6 +367,8 @@
         }
 
         // ---- Needs-attention default list (no employer selected) ----
+        // Status and the member-count line both updated 2026-09-18, same
+        // reasoning as the comparison card above.
         _attentionListHtml(entries) {
             if (!entries.length) return `<div class="empty-row">No employer data bound yet</div>`;
             const shown = entries.slice(0, MAX_LIST_ROWS);
@@ -360,10 +376,10 @@
                 `<div class="attn-row">
                     <div class="name">
                         <div class="primary" title="${e.employerName}">${e.employerName || "(Unnamed Employer)"}</div>
-                        <div class="secondary">${e.eligibleBand || "Unknown"} eligible &middot; ${e.synodRegion || "No region"}</div>
+                        <div class="secondary">${e.employeeCount.toLocaleString()} Members &middot; ${e.synodRegion || "No region"}</div>
                         <div class="secondary">2026: ${e.contributionSet2026 || "—"} &rarr; 2027: ${e.contributionSet || "—"}</div>
                     </div>
-                    <div class="status">${e.enrollmentStatus || "—"}</div>
+                    <div class="status">${e.electionStatus || "—"}</div>
                 </div>`
             ).join("");
             const more = entries.length > MAX_LIST_ROWS
@@ -400,9 +416,7 @@
                 return (a.employerName || "").localeCompare(b.employerName || "");
             });
 
-            bodyEl.innerHTML = `
-                <div class="panel-caption">Needs attention, by size (largest, least-complete first) — select an employer above for a full 2026 vs 2027 comparison</div>
-                ${this._attentionListHtml(sorted)}`;
+            bodyEl.innerHTML = this._attentionListHtml(sorted);
         }
     }
 

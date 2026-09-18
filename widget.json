@@ -1,7 +1,7 @@
 {
     "id": "com.porticobenefits.aedrilldown",
     "name": "AE Employer Election Drill-Down",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "vendor": "Portico Benefits",
     "license": "",
     "eula": "",
@@ -13,7 +13,7 @@
             "kind": "main",
             "tag": "com-porticobenefits-aedrilldown",
             "url": "https://bboehm1986.github.io/sac-ae-drilldown-widget/main.js",
-            "integrity": "sha384-pDnz30YpJT0F4C9u0fhHu+k2yOeI+exhobXCiwI4lzRGkQ4VjP5l+o7AbUMD5DWC"
+            "integrity": "sha384-J31kyQxI2YUV1WUHfoL6rPsUB3znw0RYU5hWMuslOrkJvNoLLKo24twqR1Cjtbhp"
         }
     ],
     "properties": {
@@ -31,7 +31,7 @@
             "feeds": [
                 {
                     "id": "dimensions",
-                    "description": "Employer_Name / Synod_Region / Eligible_Band / Enrollment_Status / Status_2026 / Contribution_Set / Contribution_Set_2026 / Health_Plan_Bundle / Address_Line_1 / City / State_Province / Postal_Code, from AM_EMPLOYER_ENROLLMENT_DETAIL (built directly on GLD_AE_Employer_Enrollment -- GLD_AE_Employer_Enrollment_YoY and AM_EMPLOYER_ENROLLMENT_YOY were retired 2026-09-16 once their columns were merged into Gold). Address fields added 2026-09-17, current-cycle only, no 2026 equivalent. Status_2026 uses a different, unreconciled vocabulary than Enrollment_Status -- shown as-is, not mapped; still open how to source that same vocabulary for the current cycle. Bind this widget's model, then filter it via a native Input Control on Employer_Display_Name (Tools -> Link Dimensions) -- no selection shows a needs-attention list, one selection shows a full comparison card.",
+                    "description": "Employer_Name / Synod_Region / Eligible_Band / Enrollment_Status / Status_2026 / Contribution_Set / Contribution_Set_2026 / Health_Plan_Bundle / Address_Line_1 / City / State_Province / Postal_Code / Election_Status, from AM_EMPLOYER_ENROLLMENT_DETAIL (built directly on GLD_AE_Employer_Enrollment -- GLD_AE_Employer_Enrollment_YoY and AM_EMPLOYER_ENROLLMENT_YOY were retired 2026-09-16 once their columns were merged into Gold). Address fields added 2026-09-17, current-cycle only, no 2026 equivalent. Election_Status added 2026-09-18 (also current-cycle only) -- now what's actually displayed for 2027 status everywhere in this widget; Enrollment_Status stays bound too since it still drives the needs-attention sort order. Status_2026 uses a different, unreconciled vocabulary than either -- shown as-is, not mapped. Bind this widget's model, then filter it via a native Input Control on Employer_Display_Name (Tools -> Link Dimensions) -- no selection shows a needs-attention list, one selection shows a full comparison card.",
                     "type": "dimension"
                 },
                 {
