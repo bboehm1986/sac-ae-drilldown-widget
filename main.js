@@ -361,6 +361,7 @@
                     <div class="name">
                         <div class="primary" title="${e.employerName}">${e.employerName || "(Unnamed Employer)"}</div>
                         <div class="secondary">${e.eligibleBand || "Unknown"} eligible &middot; ${e.synodRegion || "No region"}</div>
+                        <div class="secondary">2026: ${e.contributionSet2026 || "—"} &rarr; 2027: ${e.contributionSet || "—"}</div>
                     </div>
                     <div class="status">${e.enrollmentStatus || "—"}</div>
                 </div>`

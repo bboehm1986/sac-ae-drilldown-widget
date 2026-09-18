@@ -1,7 +1,7 @@
 {
     "id": "com.porticobenefits.aedrilldown",
     "name": "AE Employer Election Drill-Down",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "vendor": "Portico Benefits",
     "license": "",
     "eula": "",
@@ -13,7 +13,7 @@
             "kind": "main",
             "tag": "com-porticobenefits-aedrilldown",
             "url": "https://bboehm1986.github.io/sac-ae-drilldown-widget/main.js",
-            "integrity": "sha384-fTh63Jq21mGaoEDTO2Gxr878KvjyKlpBaovbT4+UYFhwzxRclYL1ModfXcpPiZnk"
+            "integrity": "sha384-pDnz30YpJT0F4C9u0fhHu+k2yOeI+exhobXCiwI4lzRGkQ4VjP5l+o7AbUMD5DWC"
         }
     ],
     "properties": {
